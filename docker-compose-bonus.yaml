@@ -1,0 +1,39 @@
+version: '3.8'
+services:
+  localstack:
+    image: localstack/localstack
+    ports:
+      - "4566:4566"
+    environment:
+      SERVICES: lambda,apigateway,iam,logs
+      DEBUG: 1
+    volumes:
+      - "/var/run/docker.sock:/var/run/docker.sock"
+    networks:
+      default:
+        aliases:
+          - localstack
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:4566/_localstack/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
+  terraform:
+    image: hashicorp/terraform:latest
+    volumes:
+      - .:/workspace
+    working_dir: /workspace
+    depends_on:
+      localstack:
+        condition: service_healthy
+    network_mode: "host"
+    entrypoint: >
+      /bin/sh -c "
+      sleep 60 &&
+      terraform init &&
+      terraform apply -auto-approve &&
+      sleep 10 &&
+      echo 'Executing script:' &&
+      chmod +x invoke_lambdas.sh &&
+      /bin/sh ./invoke_lambdas.sh"

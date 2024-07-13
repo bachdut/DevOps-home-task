@@ -1,6 +1,6 @@
 provider "aws" {
-  access_key                  = "mock_access_key"
-  secret_key                  = "mock_secret_key"
+  access_key                  = "testKey"
+  secret_key                  = "testSecret"
   region                      = "us-east-1"
   skip_credentials_validation = true
   skip_metadata_api_check     = true
