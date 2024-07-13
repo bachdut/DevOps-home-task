@@ -1,12 +1,13 @@
 version: '3.8'
 services:
   localstack:
-    image: localstack/localstack
+    image: localstack/localstack-pro
     ports:
       - "4566:4566"
     environment:
       SERVICES: lambda,apigateway,iam,logs
       DEBUG: 1
+      LOCALSTACK_AUTH_TOKEN: "ls-nufEwiXU-3426-Waca-9975-sEWopUKO2ee0"
     volumes:
       - "/var/run/docker.sock:/var/run/docker.sock"
     networks:
