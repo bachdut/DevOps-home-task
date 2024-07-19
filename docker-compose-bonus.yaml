@@ -7,13 +7,15 @@ services:
     environment:
       SERVICES: lambda,apigateway,iam,logs
       DEBUG: 1
-      LOCALSTACK_AUTH_TOKEN: "ToeknIsntWorking"
+      LOCALSTACK_AUTH_TOKEN: "PutYourAuthTokenHere"
+      LAMBDA_EXECUTOR: docker
+      DOCKER_HOST: unix:///var/run/docker.sock
+      AWS_DEFAULT_REGION: us-east-1
+      DEFAULT_REGION: us-east-1
     volumes:
       - "/var/run/docker.sock:/var/run/docker.sock"
     networks:
-      default:
-        aliases:
-          - localstack
+      - localstack-net
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:4566/_localstack/health"]
       interval: 30s
@@ -28,13 +30,18 @@ services:
     depends_on:
       localstack:
         condition: service_healthy
-    network_mode: "host"
+    network_mode: host
     entrypoint: >
       /bin/sh -c "
-      sleep 60 &&
+      apk update && apk add --no-cache curl perl && 
+      sleep 30 &&
       terraform init &&
       terraform apply -auto-approve &&
       sleep 10 &&
       echo 'Executing script:' &&
       chmod +x invoke_lambdas.sh &&
-      /bin/sh ./invoke_lambdas.sh"
+      ./invoke_lambdas.sh"
+
+networks:
+  localstack-net:
+    driver: bridge
